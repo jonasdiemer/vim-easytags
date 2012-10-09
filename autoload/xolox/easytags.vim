@@ -34,6 +34,8 @@ function! xolox#easytags#register(global) " {{{2
   endif
 endfunction
 
+let s:CTR = 0
+
 function! xolox#easytags#autoload(event) " {{{2
   try
     if a:event =~? 'cursorhold'
@@ -51,7 +53,12 @@ function! xolox#easytags#autoload(event) " {{{2
         if xolox#misc#option#get('easytags_updatetime_autodisable', exists('g:loaded_neocomplcache'))
           return
         else
-          call xolox#misc#msg#warn("easytags.vim %s: I'm being executed every %i milliseconds! Please :set updatetime=%i. To find where 'updatetime' was changed execute ':verb set ut?'", g:xolox#easytags#version, &updatetime, updatetime_min)
+          if s:CTR == 0
+            call xolox#misc#msg#warn("easytags.vim %s: I'm being executed every %i milliseconds! Please :set updatetime=%i. To find where 'updatetime' was changed execute ':verb set ut?'", g:xolox#easytags#version, s:CTR, updatetime_min)
+            let s:CTR = updatetime_min / &updatetime
+          else
+            let s:CTR = s:CTR - 1
+          endif
         endif
       endif
     endif
