@@ -34,7 +34,8 @@ function! xolox#easytags#register(global) " {{{2
   endif
 endfunction
 
-let s:CTR = 0
+" This variable stores how many updates should be skipped
+let s:updatetime_factor = -1
 
 function! xolox#easytags#autoload(event) " {{{2
   try
@@ -53,11 +54,15 @@ function! xolox#easytags#autoload(event) " {{{2
         if xolox#misc#option#get('easytags_updatetime_autodisable', exists('g:loaded_neocomplcache'))
           return
         else
-          if s:CTR == 0
-            call xolox#misc#msg#warn("easytags.vim %s: I'm being executed every %i milliseconds! Please :set updatetime=%i. To find where 'updatetime' was changed execute ':verb set ut?'", g:xolox#easytags#version, s:CTR, updatetime_min)
-            let s:CTR = updatetime_min / &updatetime
+          if s:updatetime_factor < 0
+            " Warn once
+            let s:updatetime_factor = updatetime_min / &updatetime
+            call xolox#misc#msg#warn("easytags.vim %s: updatetime<%s, I only execute every %s-th activation.", g:xolox#easytags#version, updatetime_min,  s:updatetime_factor)
+          elseif s:updatetime_factor == 0
+            let s:updatetime_factor = updatetime_min / &updatetime
           else
-            let s:CTR = s:CTR - 1
+            let s:updatetime_factor = s:updatetime_factor - 1
+            return
           endif
         endif
       endif
